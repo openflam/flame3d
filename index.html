@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flame3D · Zero-shot Compositional Reasoning of 3D Scenes with Agentic Language Models</title>
+  <meta name="description"
+    content="Flame3D is a training-free framework that turns posed RGB-D scans into a structured visual-textual scene memory and lets an MLLM agent compose multi-hop spatial reasoning through a hierarchy of spatial, visual, and meta-abstractions.">
+  <meta name="keywords" content="3D scene understanding, compositional reasoning, agentic LLMs, tool use, MLLM, ScanQA">
+
+  <!-- Open Graph -->
+  <meta property="og:title"
+    content="Flame3D: Zero-shot Compositional Reasoning of 3D Scenes with Agentic Language Models">
+  <meta property="og:description" content="A training-free framework for compositional 3D spatial reasoning.">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="./static/images/paper/hero-1.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/style.css?v=19">
+  <link rel="icon" href="data:,">
+</head>
+
+<body>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero">
+    <div class="container">
+      <!-- <div class="venue-badge"><span class="dot"></span> Preprint · 2026</div> -->
+      <h1 class="title">
+        <span class="brand-flame">Flame</span>3D
+        <span class="subtitle">Zero-shot Compositional Reasoning of 3D Scenes<br>with Agentic Language Models</span>
+      </h1>
+
+      <div class="authors">
+        <a href="https://sagar-bharadwaj-ks.github.io/" target="_blank">Sagar
+          Bharadwaj</a><sup>1</sup>&nbsp;&nbsp;&nbsp;
+        <a href="https://ziyongma.github.io/" target="_blank">Ziyong Ma</a><sup>1</sup>&nbsp;&nbsp;&nbsp;
+        <a href="https://anuragxel.github.io/" target="_blank">Anurag Ghosh</a><sup>1</sup>&nbsp;&nbsp;&nbsp;
+        <a href="https://www.cs.cmu.edu/~srini/" target="_blank">Srinivasan Seshan</a><sup>1</sup>&nbsp;&nbsp;&nbsp;
+        <a href="https://www.ece.cmu.edu/directory/bios/rowe-anthony.html" target="_blank">Anthony Rowe</a><sup>1</sup>
+      </div>
+      <div class="affiliations">
+        <sup>1</sup>Carnegie Mellon University
+      </div>
+
+      <div class="links">
+        <a href="#" class="btn primary">
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Paper
+        </a>
+        <a href="#qualitative" class="btn">
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+          Video
+        </a>
+        <a href="#" class="btn disabled">
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+          Code (coming soon)
+        </a>
+        <a href="#" class="btn disabled">
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+          Data (coming soon)
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero figure -->
+    <div class="hero-figure">
+      <div class="frame">
+        <img src="./static/images/hero-1.jpg"
+          alt="Flame3D answers compositional, multi-hop spatial queries about a 3D scene by chaining inferences over a structured visual-textual scene memory.">
+      </div>
+      <div class="caption">
+        Flame3D answers compositional, multi-hop spatial queries about a 3D scene by composing chain-of-thought
+        inferences over a structured visual-textual scene memory and a systematically designed set of spatial and visual
+        tool calls along with external knowledge.
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== TL;DR (under hero figure) ===== -->
+  <section class="tldr">
+    <div class="container">
+      <div class="tldr-card">
+        <div class="stamp">// TL;DR</div>
+        <p>
+          Flame3D achieves <strong>compositional reasoning</strong> by treating 3D scenes as an editable scene memory
+          exposed to off-the-shelf MLLMs through spatio-visual tool calls. Rather than relying on fixed operations, the
+          agent can synthesize <strong>dynamic spatial programs</strong> at inference time to reason about free space,
+          complex spatial relations, layouts, and hypothetical objects. New attributes and external knowledge can be
+          seamlessly integrated without retraining. No 3D-specific training or point-cloud tokens needed.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== QUALITATIVE (lifted to top) ===== -->
+  <section class="qualitative" id="qualitative">
+    <div class="container">
+      <h2>See it in action</h2>
+
+      <!-- Carousel of practical example queries -->
+      <div class="carousel" id="qual-carousel">
+        <div class="carousel-stage">
+          <article class="carousel-slide active">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">I want to move the
+                    copier elsewhere so that we have can have foosball table. Do you have a better placement of the
+                    foosball table in mind? Create a box keeping dimensions of an average foosball table and 2 players
+                    playing on it, and no other objects overlapping the box.</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/demos/1_fooseball_short.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+            <div class="slide-bottom" style="text-align: center; margin-top: 16px; width: 100%;">
+              <div class="slide-block" style="display: inline-flex; flex-direction: column; align-items: center;">
+                <h4
+                  style="margin-bottom: 12px; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">
+                  What gets composed</h4>
+                <div class="slide-tools"
+                  style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  <span class="tool-chip">Search</span>
+                  <span class="tool-chip">Web Retrieval</span>
+                  <span class="tool-chip">Vicinity Search</span>
+                  <span class="tool-chip">Execute Code</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">What are the safety
+                    hazards in this woodworking workshop? Look at hazardous items close to electrical equipments that
+                    might be fire hazards.</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/demos/2_safet_workshop_short.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+            <div class="slide-bottom" style="text-align: center; margin-top: 16px; width: 100%;">
+              <div class="slide-block" style="display: inline-flex; flex-direction: column; align-items: center;">
+                <h4
+                  style="margin-bottom: 12px; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">
+                  What gets composed</h4>
+                <div class="slide-tools"
+                  style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  <span class="tool-chip">Vicinity Search</span>
+                  <span class="tool-chip">Distance</span>
+                  <span class="tool-chip">Search</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">How many people can
+                    sleep in this apartment?</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/demos/3_how_many_sleep_short.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+            <div class="slide-bottom" style="text-align: center; margin-top: 16px; width: 100%;">
+              <div class="slide-block" style="display: inline-flex; flex-direction: column; align-items: center;">
+                <h4
+                  style="margin-bottom: 12px; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">
+                  What gets composed</h4>
+                <div class="slide-tools"
+                  style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  <span class="tool-chip">Search</span>
+                  <span class="tool-chip">Get Dimensions</span>
+                  <span class="tool-chip">Retrieval</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 4: Inventory -->
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">Where can place a new
+                    centrifuge in this lab? Give me box placement on a surface using the dimensions of a standard
+                    centrifuge.</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/demos/4_cenrifuge_short.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+            <div class="slide-bottom" style="text-align: center; margin-top: 16px; width: 100%;">
+              <div class="slide-block" style="display: inline-flex; flex-direction: column; align-items: center;">
+                <h4
+                  style="margin-bottom: 12px; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">
+                  What gets composed</h4>
+                <div class="slide-tools"
+                  style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  <span class="tool-chip">Search</span>
+                  <span class="tool-chip">Web Retrieval</span>
+                  <span class="tool-chip">Execute Code</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">We are trying to
+                    decorate our house, and I'm in Ikea right now. Can you check how many plants do we have in our
+                    apartment? What are the different varieties of plants that we do have?</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/demos/5_plant.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+            <div class="slide-bottom" style="text-align: center; margin-top: 16px; width: 100%;">
+              <div class="slide-block" style="display: inline-flex; flex-direction: column; align-items: center;">
+                <h4
+                  style="margin-bottom: 12px; color: var(--text-mute); font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;">
+                  What gets composed</h4>
+                <div class="slide-tools"
+                  style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                  <span class="tool-chip">Search</span>
+                  <span class="tool-chip">Get Image</span>
+                  <span class="tool-chip">Plant Database</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="carousel-controls" style="justify-content: center; gap: 24px;">
+          <button type="button" class="nav-btn prev" aria-label="Previous example">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="carousel-tags" style="gap: 12px;">
+            <button type="button" class="tag-btn active" data-slide="0">01</button>
+            <button type="button" class="tag-btn" data-slide="1">02</button>
+            <button type="button" class="tag-btn" data-slide="2">03</button>
+            <button type="button" class="tag-btn" data-slide="3">04</button>
+            <button type="button" class="tag-btn" data-slide="4">05</button>
+          </div>
+          <button type="button" class="nav-btn next" aria-label="Next example">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== METHOD / PIPELINE ===== -->
+  <section id="pipeline">
+    <div class="container">
+      <h2>Framework Overview</h2>
+
+      <div class="method-figure">
+        <img src="./static/images/paper/method-1.png"
+          alt="Flame3D framework overview: scene memory, tool hierarchy, and agentic reasoning loop.">
+        <div class="caption">When a complex natural-language query is received, an off-the-shelf tool-calling
+          vision-language model breaks it down into a sequence of spatial and external tool-calls to produce a grounded
+          answer. The agent composes these inferences by interacting with the structured scene memory through a
+          collection of spatial tools (search, distance, vicinity search, navigation distance, image retrieval, and code
+          execution) and optional external tools (e.g., compliance databases, machine profiles, pricing catalogs,
+          internet search). The scene memory is constructed from posed RGB-D frames as a 3D spatial database.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAKEAWAYS (six insights from the paper) ===== -->
+  <section id="takeaways">
+    <div class="container">
+      <h2>Insights from our experiments</h2>
+
+      <div class="insights three-col">
+        <article class="insight">
+          <h3>Genuine 3D understanding may not require training on 3D-language data.</h3>
+        </article>
+
+        <article class="insight">
+          <h3>Fixed toolsets are insufficient for open-ended 3D queries.</h3>
+        </article>
+
+        <article class="insight">
+          <h3>Visual input is often not required for spatial reasoning queries.</h3>
+        </article>
+
+        <article class="insight">
+          <h3>Sole reliance on language priors fails for multi-hop spatial reasoning queries.</h3>
+        </article>
+
+        <article class="insight">
+          <h3>Meta tool is surprisingly powerful but not sufficient.</h3>
+        </article>
+
+        <article class="insight">
+          <h3>Scaling foundation models improves spatial reasoning.</h3>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESULTS (insight-led; tables back the claims) ===== -->
+  <section id="results">
+    <div class="container">
+
+      <!-- ===== CODE EXAMPLES: execute_program in action ===== -->
+      <h3>Programs synthesized at inference time</h3>
+
+      <div class="carousel code-carousel" id="code-carousel">
+        <div class="carousel-stage">
+
+          <!-- Slide 1: Reason about free space -->
+          <article class="carousel-slide active" style="position: relative;">
+            <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+            <div class="code-example-card">
+              <div class="code-example-query">
+                <span class="code-example-category">Reason about free space</span>
+                <div class="code-example-query-row">
+                  <span class="query-icon">?</span>
+                  <p>Would an IKEA Billy bookshelf fit between the two tables in this room.</p>
+                </div>
+              </div>
+              <div class="code-example-body">
+                <div class="code-example-left">
+                  <div class="code-example-tools">
+                    <div class="code-example-tools-header">Tool Usage</div>
+                    <p><strong class="tool-search">Search</strong> for tables.</p>
+                    <p><strong class="tool-retrieve">Retrieve from Web</strong> IKEA Billy dimensions.</p>
+                    <p><strong class="tool-execute">Execute Program</strong> to get the 3D bounding box that fits
+                      between tables.</p>
+                  </div>
+                  <div class="code-example-image">
+                    <img src="./static/images/code_examples/example1.png"
+                      alt="Scene with two tables and a computed bounding box for an IKEA Billy bookshelf between them.">
+                  </div>
+                </div>
+                <div class="code-example-right">
+                  <div class="code-example-pseudo-header">Pseudocode of the executed program</div>
+                  <pre class="code-example-pseudo"><code>B1, B2 ← bbox corners of tables
+
+gaps ← axis-wise separations between the boxes
+axis ← axis with largest positive gap
+
+width ← gaps[axis]
+
+if width &lt; <span class="pseudo-highlight">80 cm</span> :       <span class="pseudo-web-note">Retrieved from Web</span>
+    return false
+
+shelf_base ← gap interval on axis + overlap interval on other
+                            horizontal axis
+shelf_height ← [floor_z, floor_z + <span class="pseudo-highlight">2.06 m</span>]  <span class="pseudo-web-note">Retrieved from Web</span>
+
+bbox ← 8 corners of shelf_base x shelf_height
+
+return bbox</code></pre>
+                </div>
+              </div>
+              <div class="code-example-answer">
+                <span class="code-example-answer-label">Response</span>
+                An IKEA Billy shelf would fit between <strong class="entity-red">table-1</strong> and <strong
+                  class="entity-green">table-2</strong>. After giving a safe clearance of 5 cm, there is a gap of 1.23
+                m. The <strong class="entity-purple">bounding box</strong> shows a potential location for IKEA Billy.
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 2: Complex spatial relationship -->
+          <article class="carousel-slide" style="position: relative;">
+            <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+            <div class="code-example-card">
+              <div class="code-example-query">
+                <span class="code-example-category">Complex spatial relationship</span>
+                <div class="code-example-query-row">
+                  <span class="query-icon">?</span>
+                  <p>At what fraction of the length of the super-heater outlet is the safety valve located?</p>
+                </div>
+              </div>
+              <div class="code-example-body">
+                <div class="code-example-left">
+                  <div class="code-example-tools">
+                    <div class="code-example-tools-header">Tool Usage</div>
+                    <p><strong class="tool-search">Search</strong> for super-heater outlet, safety valve</p>
+                    <p><strong class="tool-execute">Execute Program</strong> to project the valve down to the outlet
+                      axis.</p>
+                  </div>
+                  <div class="code-example-image">
+                    <img src="./static/images/code_examples/example2.png"
+                      alt="Industrial pipe scene with super-heater outlet highlighted in red and safety valve in green.">
+                  </div>
+                </div>
+                <div class="code-example-right">
+                  <div class="code-example-pseudo-header">Pseudocode of the executed program</div>
+                  <pre class="code-example-pseudo"><code>outlet ← GetComponentInfo(56)
+valve  ← GetComponentInfo(218)
+
+axis ← longest edge of outlet bounding box
+L    ← length(axis)
+u    ← axis / L
+
+p_outlet ← reference corner of outlet
+p_valve  ← center of valve bounding box
+
+<span class="pseudo-highlight"># Project valve onto outlet</span>
+fraction ← dot(p_valve - p_outlet, u) / L
+return fraction</code></pre>
+                </div>
+              </div>
+              <div class="code-example-answer">
+                <span class="code-example-answer-label">Response</span>
+                The <strong class="entity-green">safety-valve</strong> is mounted at about 6.5% from one end along the
+                length of the <strong class="entity-red">super-heater outlet</strong>.
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="carousel-controls" style="justify-content: center; gap: 24px;">
+          <button type="button" class="nav-btn prev" aria-label="Previous example">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="carousel-tags" style="gap: 12px;">
+            <button type="button" class="tag-btn active" data-slide="0">Free space</button>
+            <button type="button" class="tag-btn" data-slide="1">Spatial relation</button>
+          </div>
+          <button type="button" class="nav-btn next" aria-label="Next example">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ScanQA case-study carousel: concrete examples of reference mismatch -->
+      <h3 style="margin-top:40px;">Ambiguity in the ScanQA ground truth</h3>
+      <p>Our method often generates contextually valid answers but are penalized by ambiguity in the ScanQA
+        ground-truth.</p>
+
+      <div class="carousel scanqa-carousel" id="scanqa-carousel">
+        <div class="carousel-stage">
+
+          <!-- Slide 1: chair color (synonym / specificity mismatch) -->
+          <article class="carousel-slide active">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">What color are the
+                    chairs on the wall?</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative; margin: 0 auto;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/scanqa3.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+
+            <div class="slide-bottom"
+              style="text-align: center; margin-top: 24px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
+              <div class="answer-compare"
+                style="display: grid; grid-template-columns: 1fr 1fr; max-width: 600px; margin: 0 auto; text-align: left; gap: 24px;">
+                <div class="ans gt">
+                  <span class="ans-label">GT answer</span>
+                  <ul>
+                    <li>"red"</li>
+                    <li>"red and black"</li>
+                  </ul>
+                </div>
+                <div class="ans ours">
+                  <span class="ans-label">Our answer</span>
+                  <p>"maroon"</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 2: loveseat (compound, more specific answer) -->
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">What type of loveseat is
+                    in a library?</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative; margin: 0 auto;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/scanqa4.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+
+            <div class="slide-bottom"
+              style="text-align: center; margin-top: 24px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
+              <div class="answer-compare"
+                style="display: grid; grid-template-columns: 1fr 1fr; max-width: 600px; margin: 0 auto; text-align: left; gap: 24px;">
+                <div class="ans gt">
+                  <span class="ans-label">GT answer</span>
+                  <ul>
+                    <li>"black"</li>
+                    <li>"gray loveseats"</li>
+                  </ul>
+                </div>
+                <div class="ans ours">
+                  <span class="ans-label">Our answer</span>
+                  <p>"black leather loveseat"</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 3: TV location -->
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">On what part of the
+                    kitchen is the black square tv located?</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative; margin: 0 auto;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/scanqa1.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+
+            <div class="slide-bottom"
+              style="text-align: center; margin-top: 24px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
+              <div class="answer-compare"
+                style="display: grid; grid-template-columns: 1fr 1fr; max-width: 600px; margin: 0 auto; text-align: left; gap: 24px;">
+                <div class="ans gt">
+                  <span class="ans-label">GT answer</span>
+                  <ul>
+                    <li>"wall"</li>
+                    <li>"on right wall"</li>
+                  </ul>
+                </div>
+                <div class="ans ours">
+                  <span class="ans-label">Our answer</span>
+                  <p>"back of the kitchen"</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 4: monitor closest to -->
+          <article class="carousel-slide">
+            <div class="slide-main" style="width: 100%; max-width: 900px; margin: 0 auto;">
+              <div class="slide-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                <div class="slide-query"
+                  style="margin-bottom: 0; flex: 1; display: flex; align-items: center; gap: 12px; border-radius: 8px; border-left: 3px solid var(--accent); padding: 8px 16px;">
+                  <span class="query-marker" style="margin-bottom: 0;">Query</span>
+                  <p style="margin: 0; font-size: 15px; color: var(--text);">What is the monitor
+                    closest to?</p>
+                </div>
+              </div>
+              <figure class="example" style="position: relative; margin: 0 auto;">
+                <button type="button" class="nav-btn prev side-arrow" aria-label="Previous">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="nav-btn next side-arrow" aria-label="Next">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="example-frame">
+                  <video src="./static/video/scanqa2.mp4" controls
+                    controlsList="nodownload noplaybackrate noremoteplayback" disablePictureInPicture preload="metadata"
+                    playsinline></video>
+                </div>
+                <div class="example-controls" style="justify-content: center;">
+                  <span class="speed-label">Speed</span>
+                  <button type="button" data-speed="1">1x</button>
+                  <button type="button" data-speed="2" class="active">2x</button>
+                </div>
+              </figure>
+            </div>
+
+            <div class="slide-bottom"
+              style="text-align: center; margin-top: 24px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto;">
+              <div class="answer-compare"
+                style="display: grid; grid-template-columns: 1fr 1fr; max-width: 600px; margin: 0 auto; text-align: left; gap: 24px;">
+                <div class="ans gt">
+                  <span class="ans-label">GT answer</span>
+                  <ul>
+                    <li>"closest to whiteboard"</li>
+                    <li>"cabinet"</li>
+                  </ul>
+                </div>
+                <div class="ans ours">
+                  <span class="ans-label">Our answer</span>
+                  <p>"box"</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 5: painting direction (annotation noise / geometric reasoning) -->
+        </div>
+
+        <div class="carousel-controls" style="justify-content: center; gap: 24px;">
+          <button type="button" class="nav-btn prev" aria-label="Previous case">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="carousel-tags" style="gap: 12px;">
+            <button type="button" class="tag-btn active" data-slide="0">01</button>
+            <button type="button" class="tag-btn" data-slide="1">02</button>
+            <button type="button" class="tag-btn" data-slide="2">03</button>
+            <button type="button" class="tag-btn" data-slide="3">04</button>
+          </div>
+          <button type="button" class="nav-btn next" aria-label="Next case">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BIBTEX ===== -->
+  <section class="bibtex" id="bibtex">
+    <div class="container">
+      <h2>Citation</h2>
+      <pre><code>@article{bharadwaj2026flame3d,
+  title={Flame3D: Zero-shot Compositional Reasoning of 3D Scenes with Agentic Language Models}, 
+  author={Sagar Bharadwaj and Ziyong Ma and Anurag Ghosh and Srinivasan Seshan and Anthony Rowe},
+  journal={arXiv preprint arXiv:XXXX.XXXXX},
+  year={2026}
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="container">
+      <p>© 2026 Flame3D Authors.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll-progress bar: writes a 0-1 fraction into --scroll on <html>.
+    (function initScrollProgress() {
+      const root = document.documentElement;
+      function update() {
+        const total = root.scrollHeight - root.clientHeight;
+        const ratio = total > 0 ? Math.min(1, Math.max(0, root.scrollTop / total)) : 0;
+        root.style.setProperty('--scroll', ratio);
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    })();
+
+    // Speed-pill control: clicking sets video.playbackRate and toggles .active.
+    document.querySelectorAll('.example').forEach(fig => {
+      const video = fig.querySelector('video');
+      const buttons = fig.querySelectorAll('.example-controls button');
+      if (!video || !buttons.length) return;
+      // Set initial speed from the active button
+      const activeBtn = fig.querySelector('.example-controls button.active');
+      if (activeBtn) {
+        const initRate = parseFloat(activeBtn.dataset.speed);
+        if (!isNaN(initRate)) video.playbackRate = initRate;
+      }
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rate = parseFloat(btn.dataset.speed);
+          if (!isNaN(rate)) video.playbackRate = rate;
+          buttons.forEach(b => b.classList.toggle('active', b === btn));
+        });
+      });
+    });
+
+    // Carousel: switch slides via tag buttons, prev/next, or arrow keys.
+    // Supports multiple carousels on the page.
+    function initCarousel(carousel) {
+      const slides = Array.from(carousel.querySelectorAll('.carousel-slide'));
+      if (!slides.length) return;
+      const tagBtns = Array.from(carousel.querySelectorAll('.tag-btn'));
+      const prevBtns = carousel.querySelectorAll('.nav-btn.prev');
+      const nextBtns = carousel.querySelectorAll('.nav-btn.next');
+      const counter = carousel.querySelector('.carousel-counter');
+      let idx = 0;
+
+      function update() {
+        slides.forEach((s, k) => {
+          const isActive = (k === idx);
+          s.classList.toggle('active', isActive);
+          const v = s.querySelector('video');
+          if (v) {
+            if (!isActive) {
+              v.pause();
+            } else {
+              const rect = v.getBoundingClientRect();
+              const inView = (rect.top < window.innerHeight && rect.bottom > 0);
+              if (inView) v.play().catch(() => { });
+            }
+          }
+        });
+        tagBtns.forEach((b, k) => b.classList.toggle('active', k === idx));
+        if (counter) {
+          counter.textContent =
+            String(idx + 1).padStart(2, '0') + ' / ' +
+            String(slides.length).padStart(2, '0');
+        }
+      }
+
+      prevBtns.forEach(btn => btn.addEventListener('click', () => { idx = (idx - 1 + slides.length) % slides.length; update(); }));
+      nextBtns.forEach(btn => btn.addEventListener('click', () => { idx = (idx + 1) % slides.length; update(); }));
+      tagBtns.forEach((b, k) => b.addEventListener('click', () => { idx = k; update(); }));
+
+      update();
+    }
+
+    document.querySelectorAll('.carousel').forEach(initCarousel);
+
+    // Autoplay visible videos in a loop
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        const slide = video.closest('.carousel-slide');
+        const isActive = slide ? slide.classList.contains('active') : true;
+
+        if (entry.isIntersecting && isActive) {
+          video.play().catch(() => { });
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('video').forEach(v => {
+      v.loop = true;
+      v.muted = true; // Required for autoplay
+      videoObserver.observe(v);
+    });
+
+    // Arrow-key nav targets whichever carousel is most in view.
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const carousels = Array.from(document.querySelectorAll('.carousel'));
+      if (!carousels.length) return;
+      let best = carousels[0], bestVisible = -1;
+      carousels.forEach(c => {
+        const r = c.getBoundingClientRect();
+        const visible = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
+        if (visible > bestVisible) { bestVisible = visible; best = c; }
+      });
+      const btn = best.querySelector(e.key === 'ArrowLeft' ? '.nav-btn.prev' : '.nav-btn.next');
+      if (btn) btn.click();
+    });
+  </script>
+</body>
+
+</html>
