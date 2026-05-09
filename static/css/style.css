@@ -307,11 +307,11 @@ p {
 }
 
 .authors a {
-  color: var(--text);
+  color: var(--accent);
 }
 
 .authors a:hover {
-  color: var(--accent);
+  color: var(--accent-2);
 }
 
 .authors sup {
